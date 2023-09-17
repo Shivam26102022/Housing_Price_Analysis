@@ -107,224 +107,10 @@ st.set_page_config(
     page_title="Housing Price Analysis",
     page_icon="🏠",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="expanded"
     
 )
 
-
-# Define a function to create and display the selected chart
-def create_chart(selected_chart):
-
-
-
-    merged_data['DATE'] = pd.to_datetime(merged_data['DATE'])
-    merged_data.set_index('DATE', inplace=True)
-
-    merged_data['MSACSR'] = pd.to_numeric(merged_data['MSACSR'], errors='coerce')
-    merged_data['CSUSHPISA'] = pd.to_numeric(merged_data['CSUSHPISA'], errors='coerce')
-    merged_data['PERMIT'] = pd.to_numeric(merged_data['PERMIT'], errors='coerce')
-    merged_data['TLRESCONS'] = pd.to_numeric(merged_data['TLRESCONS'], errors='coerce')
-    merged_data['EVACANTUSQ176N'] = pd.to_numeric(merged_data['EVACANTUSQ176N'], errors='coerce')
-    merged_data['MORTGAGE30US'] = pd.to_numeric(merged_data['MORTGAGE30US'], errors='coerce')
-    merged_data['GDP'] = pd.to_numeric(merged_data['GDP'], errors='coerce')
-    merged_data['UMCSENT'] = pd.to_numeric(merged_data['UMCSENT'], errors='coerce')
-
-    merged_data.dropna(subset=['MSACSR', 'PERMIT', 'TLRESCONS', 'EVACANTUSQ176N', 'MORTGAGE30US', 'GDP', 'UMCSENT' ], inplace=True)
-
-
-
-    if selected_chart == "Monthly Supply vs. Home Price":
-        merged_data['QUARTER'] = merged_data.index.to_period('Q')
-        merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
-        grouped_data = merged_data.groupby('QUARTER').agg({'MSACSR': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
-        scaler = MinMaxScaler()
-        grouped_data[['MSACSR', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['MSACSR', 'CSUSHPISA']])
-        grouped_data = grouped_data.sort_values('QUARTER')
-        plt.figure(figsize=(16, 6))
-        sns.barplot(x='QUARTER', y='MSACSR', data=grouped_data, color='skyblue', label='MSACSR')
-        sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
-        plt.xlabel('Quarter')
-        plt.ylabel('Normalized Values')
-        plt.title('Monthly Supply of New Houses vs CSUSHPISA (Normalized)')
-        plt.legend()
-        plt.grid(True)
-        plt.xticks(rotation=45, ha='right', fontsize=8)
-        st.pyplot(plt.gcf())
-        st.subheader("Monthly Supply of New Houses vs. Home Price Index (CSUSHPISA)")
-        st.write("The Monthly Supply of New Houses in the United States (MSACSR) represents the ratio of the current new for-sale inventory to the number of new houses being sold. It indicates how long the existing inventory would last at the current sales rate if no additional new houses were built. Importantly, MSACSR has a negative correlation with home prices, meaning that an increase in MSACSR may lead to a decrease in the S&P/Case-Shiller U.S. National Home Price Index. This relationship arises because an increase in the supply of new houses can potentially reduce demand, which in turn may result in lower home prices.")
-    
-    elif selected_chart == "Vacant Housing Units vs. Home Price":
-        merged_data['QUARTER'] = merged_data.index.to_period('Q')
-        merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
-        grouped_data = merged_data.groupby('QUARTER').agg({'EVACANTUSQ176N': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
-        scaler = MinMaxScaler()
-        grouped_data[['EVACANTUSQ176N', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['EVACANTUSQ176N', 'CSUSHPISA']])
-        grouped_data = grouped_data.sort_values('QUARTER')
-        plt.figure(figsize=(16, 6))
-        sns.barplot(x='QUARTER', y='EVACANTUSQ176N', data=grouped_data, color='skyblue', label='Median Sales Price')
-        sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
-        plt.xlabel('Quarter')
-        plt.ylabel('Normalized Values')
-        plt.title('Vacant Housing Units vs CSUSHPISA (Normalized)')
-        plt.legend()
-        plt.grid(True)
-        plt.xticks(rotation=45, ha='right', fontsize=8)
-        plt.tight_layout()
-        st.pyplot(plt.gcf())
-        st.subheader("Vacant Housing Units vs. Home Price Index (CSUSHPISA)")
-        st.write("""Imagine there are houses for sale, and some of them are empty and waiting for buyers. When there are not many empty houses (low inventory), home prices tend to go up because buyers compete and offer more money to buy a home. It's like a bidding war.
-But when there are lots of empty houses (high inventory), it can push home prices down. That's because there are more houses than buyers, so sellers might lower prices to attract buyers. So, the number of empty houses can affect whether home prices go up or down.""")
-    
-    elif selected_chart == "New Housing Units Authorized vs. Home Price":
-        merged_data['QUARTER'] = merged_data.index.to_period('Q')
-        merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
-        grouped_data = merged_data.groupby('QUARTER').agg({'PERMIT': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
-        scaler = MinMaxScaler()
-        grouped_data[['PERMIT', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['PERMIT', 'CSUSHPISA']])
-        grouped_data = grouped_data.sort_values('QUARTER')
-        plt.figure(figsize=(16, 6))
-        sns.barplot(x='QUARTER', y='PERMIT', data=grouped_data, color='skyblue', label='Median Sales Price')
-        sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
-        plt.xlabel('Quarter')
-        plt.ylabel('Normalized Values')
-        plt.title('New Housing Units Authorized vs CSUSHPISA (Normalized)')
-        plt.legend()
-        plt.grid(True)
-        plt.xticks(rotation=45, ha='right', fontsize=8)
-        plt.tight_layout()
-        # Pass the Matplotlib figure to st.pyplot
-        st.pyplot(plt.gcf())
-        st.subheader("New Housing Units Authorized vs. Home Price Index (CSUSHPISA)")
-        st.write("New Privately-Owned Housing Units Authorized (PERMIT) counts how many new houses are allowed to be built. When more permits are given (high PERMIT), it's a good sign for home prices. It means there's demand, and prices can go up, like when everyone wants a limited-edition toy.")
-
-    elif selected_chart == "Total Construction Spending vs. Home Price":
-        merged_data['QUARTER'] = merged_data.index.to_period('Q')
-        merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
-        grouped_data = merged_data.groupby('QUARTER').agg({'TLRESCONS': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
-        scaler = MinMaxScaler()
-        grouped_data[['TLRESCONS', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['TLRESCONS', 'CSUSHPISA']])
-        grouped_data = grouped_data.sort_values('QUARTER')
-        plt.figure(figsize=(16, 6))
-        sns.barplot(x='QUARTER', y='TLRESCONS', data=grouped_data, color='skyblue', label='Median Sales Price')
-        sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
-        plt.xlabel('Quarter')
-        plt.ylabel('Normalized Values')
-        plt.title('Construction Spending vs CSUSHPISA (Normalized)')
-        plt.legend()
-        plt.grid(True)
-        plt.xticks(rotation=45, ha='right', fontsize=8)
-        plt.tight_layout()
-        st.pyplot(plt.gcf())
-        st.subheader("Total Construction Spending vs. Home Price Index (CSUSHPISA)")
-        st.write("Total Construction Spending on Homes is like a measure of how much money is spent on building houses in the U.S. When this spending is high, it usually means good news for home prices. More home building often leads to higher demand, which can drive up prices, like a popular item getting more expensive")
-
-    elif selected_chart == "30-Year Fixed Rate Mortgage vs. Home Price":
-        merged_data['QUARTER'] = merged_data.index.to_period('Q')
-        merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
-        grouped_data = merged_data.groupby('QUARTER').agg({'MORTGAGE30US': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
-        scaler = MinMaxScaler()
-        grouped_data[['MORTGAGE30US', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['MORTGAGE30US', 'CSUSHPISA']])
-        grouped_data = grouped_data.sort_values('QUARTER')
-        plt.figure(figsize=(16, 6))
-        sns.barplot(x='QUARTER', y='MORTGAGE30US', data=grouped_data, color='skyblue', label='Median Sales Price')
-        sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
-        plt.xlabel('Quarter')
-        plt.ylabel('Normalized Values')
-        plt.title('30-Year Fixed Rate Mortgag vs CSUSHPISA (Normalized)')
-        plt.legend()
-        plt.grid(True)
-        plt.xticks(rotation=45, ha='right', fontsize=8)
-        plt.tight_layout()
-        st.pyplot(plt.gcf())
-        st.subheader("30-Year Fixed Rate Mortgage vs. Home Price Index (CSUSHPISA)")
-        st.write("The 30-Year Fixed Rate Mortgage Average in the United States is like a gauge for mortgage interest rates. When rates are low, it's easier for folks to afford homes, boosting demand and raising home prices. Conversely, high rates make buying homes tough, reducing demand and lowering prices. Keep in mind that this chart lags behind, so it might not show an immediate connection between the variables.")
-
-    elif selected_chart == "GDP vs. Home Price":
-        merged_data['QUARTER'] = merged_data.index.to_period('Q')
-        merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
-        grouped_data = merged_data.groupby('QUARTER').agg({'GDP': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
-        scaler = MinMaxScaler()
-        grouped_data[['GDP', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['GDP', 'CSUSHPISA']])
-        grouped_data = grouped_data.sort_values('QUARTER')
-        plt.figure(figsize=(16, 6))
-        sns.barplot(x='QUARTER', y='GDP', data=grouped_data, color='skyblue', label='Median Sales Price')
-        sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
-        plt.xlabel('Quarter')
-        plt.ylabel('Normalized Values')
-        plt.title('GDP vs CSUSHPISA (Normalized)')
-        plt.legend()
-        plt.grid(True)
-        plt.xticks(rotation=45, ha='right', fontsize=8)
-        plt.tight_layout()
-        st.pyplot(plt.gcf())
-        st.subheader("GDP vs. Home Price Index (CSUSHPISA)")
-        st.write("The Gross Domestic Product (GDP) is like a measure of the overall economic health of a country. When GDP is strong, it often means a healthy economy, and that can boost home prices. The chart shows that when GDP goes up (more economic activity), home prices tend to follow suit. It's like when people have more money, they're more likely to buy homes, which can push prices up.")
-
-    elif selected_chart == "Consumer Sentiment vs. Home Price":
-        merged_data['QUARTER'] = merged_data.index.to_period('Q')
-        merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
-        grouped_data = merged_data.groupby('QUARTER').agg({'UMCSENT': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
-        scaler = MinMaxScaler()
-        grouped_data[['UMCSENT', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['UMCSENT', 'CSUSHPISA']])
-        grouped_data = grouped_data.sort_values('QUARTER')
-        plt.figure(figsize=(16, 6))
-        sns.barplot(x='QUARTER', y='UMCSENT', data=grouped_data, color='skyblue', label='Median Sales Price')
-        sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
-        plt.xlabel('Quarter')
-        plt.ylabel('Normalized Values')
-        plt.title('Consumer Sentiment vs CSUSHPISA (Normalized)')
-        plt.legend()
-        plt.grid(True)
-        plt.xticks(rotation=45, ha='right', fontsize=8)
-        plt.tight_layout()
-        st.pyplot(plt.gcf())
-        st.subheader("Consumer Sentiment vs. Home Price Index (CSUSHPISA)")
-        st.write("The University of Michigan Consumer Sentiment Index reflects how confident people feel about the economy. When confidence is high, folks tend to spend more, including on big purchases like homes. This increased demand for homes can drive up prices, as shown in the chart")
-
-    elif selected_chart == "Interest Rates vs. Home Price":
-        merged_data['QUARTER'] = merged_data.index.to_period('Q')
-        merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
-        grouped_data = merged_data.groupby('QUARTER').agg({'INTDSRUSM193N': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
-        scaler = MinMaxScaler()
-        grouped_data[['INTDSRUSM193N', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['INTDSRUSM193N', 'CSUSHPISA']])
-        grouped_data = grouped_data.sort_values('QUARTER')
-        plt.figure(figsize=(16, 6))
-        sns.barplot(x='QUARTER', y='INTDSRUSM193N', data=grouped_data, color='skyblue', label='Median Sales Price')
-        sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
-        plt.xlabel('Quarter')
-        plt.ylabel('Normalized Values')
-        plt.title('Interest Rates vs CSUSHPISA (Normalized)')
-        plt.legend()
-        plt.grid(True)
-        plt.xticks(rotation=45, ha='right', fontsize=8)
-        plt.tight_layout()
-        st.pyplot(plt.gcf())        
-        st.subheader("Interest Rates vs. Home Price Index (CSUSHPISA)")
-        st.write("The Interest Rates and Discount Rate are tools used by the Federal Reserve to control the supply of money in the economy. Lower interest rates make it easier for people to borrow money, increasing demand for homes and driving up prices, as seen in the chart.")
-
-    elif selected_chart == "Median Sales Price vs. Home Price":
-        merged_data['QUARTER'] = merged_data.index.to_period('Q')
-        merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
-        grouped_data = merged_data.groupby('QUARTER').agg({'MSPUS': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
-        scaler = MinMaxScaler()
-        grouped_data[['MSPUS', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['MSPUS', 'CSUSHPISA']])
-        grouped_data = grouped_data.sort_values('QUARTER')
-        plt.figure(figsize=(16, 6))
-        sns.barplot(x='QUARTER', y='MSPUS', data=grouped_data, color='skyblue', label='Median Sales Price')
-        sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
-        plt.xlabel('Quarter')
-        plt.ylabel('Normalized Values')
-        plt.title('Median Sales Price vs CSUSHPISA (Normalized)')
-        plt.legend()
-        plt.grid(True)
-        plt.xticks(rotation=45, ha='right', fontsize=8)
-        plt.tight_layout()
-        st.pyplot(plt.gcf())
-        st.subheader("Median Sales Price vs. Home Price Index (CSUSHPISA)")
-        st.write("The Median Sales Price reflects the midpoint of house sale prices, indicating that half sold for more and half for less. A rise in median prices is closely linked to higher home prices.")
-   
-
-# Streamlit UI
 st.header("🏠 US Housing Price Analysis ")
 st.markdown("""
 **Created by:** Shivam Bahuguna  
@@ -332,76 +118,306 @@ st.markdown("""
 **Date:** September 17, 2023
 """)
 
-selected_chart = st.selectbox("👇Key Features", ["Select a Feature",
-    "Monthly Supply vs. Home Price",
-    "Vacant Housing Units vs. Home Price",
-    "New Housing Units Authorized vs. Home Price",
-    "Total Construction Spending vs. Home Price",
-    "30-Year Fixed Rate Mortgage vs. Home Price",
-    "GDP vs. Home Price",
-    "Consumer Sentiment vs. Home Price",
-    "Interest Rates vs. Home Price",
-    "Median Sales Price vs. Home Price"
-])
+st.markdown(
+    """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Define a function to create and display the selected chart
+def selected_chart():
+
+    selected_chart = st.selectbox("👇Key Features", ["Select a Feature",
+        "Monthly Supply vs. Home Price",
+        "Vacant Housing Units vs. Home Price",
+        "New Housing Units Authorized vs. Home Price",
+        "Total Construction Spending vs. Home Price",
+        "30-Year Fixed Rate Mortgage vs. Home Price",
+        "GDP vs. Home Price",
+        "Consumer Sentiment vs. Home Price",
+        "Interest Rates vs. Home Price",
+        "Median Sales Price vs. Home Price"
+    ])
+
+    if selected_chart != "Select a Feature" and st.button("Generate Chart"):
 
 
-models = {
-    'Select a Model': None,  # Initial placeholder with no model selected
-    'Linear Regression': LinearRegression(),
-    'Decision Tree': DecisionTreeRegressor(),
-    'Random Forest': RandomForestRegressor(),
-    'Support Vector Regression': SVR(),
-    'Neural Network': MLPRegressor()
-}
+        merged_data['DATE'] = pd.to_datetime(merged_data['DATE'])
+        merged_data.set_index('DATE', inplace=True)
 
-# Create a Streamlit selectbox to choose the regression model
-selected_model = st.selectbox("👇Regression Models", list(models.keys()))
+        merged_data['MSACSR'] = pd.to_numeric(merged_data['MSACSR'], errors='coerce')
+        merged_data['CSUSHPISA'] = pd.to_numeric(merged_data['CSUSHPISA'], errors='coerce')
+        merged_data['PERMIT'] = pd.to_numeric(merged_data['PERMIT'], errors='coerce')
+        merged_data['TLRESCONS'] = pd.to_numeric(merged_data['TLRESCONS'], errors='coerce')
+        merged_data['EVACANTUSQ176N'] = pd.to_numeric(merged_data['EVACANTUSQ176N'], errors='coerce')
+        merged_data['MORTGAGE30US'] = pd.to_numeric(merged_data['MORTGAGE30US'], errors='coerce')
+        merged_data['GDP'] = pd.to_numeric(merged_data['GDP'], errors='coerce')
+        merged_data['UMCSENT'] = pd.to_numeric(merged_data['UMCSENT'], errors='coerce')
 
-# Initialize a dictionary to store model evaluation results
-results = {}
-
-# Check if a valid model is selected (not the placeholder)
+        merged_data.dropna(subset=['MSACSR', 'PERMIT', 'TLRESCONS', 'EVACANTUSQ176N', 'MORTGAGE30US', 'GDP', 'UMCSENT' ], inplace=True)
 
 
-if selected_model != 'Select a Model':
-    # Perform cross-validation and calculate mean squared error for the selected model
-    model_instance = models[selected_model]
-    scores = cross_val_score(model_instance, X_train, y_train, cv=5, scoring='neg_mean_squared_error')
-    mse_scores = -scores
-    avg_mse = mse_scores.mean()
-    results[selected_model] = avg_mse
 
-    # Fit the selected model to the training data
-    model_instance.fit(X_train, y_train)
+        if selected_chart == "Monthly Supply vs. Home Price":
+            merged_data['QUARTER'] = merged_data.index.to_period('Q')
+            merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
+            grouped_data = merged_data.groupby('QUARTER').agg({'MSACSR': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
+            scaler = MinMaxScaler()
+            grouped_data[['MSACSR', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['MSACSR', 'CSUSHPISA']])
+            grouped_data = grouped_data.sort_values('QUARTER')
+            plt.figure(figsize=(16, 6))
+            sns.barplot(x='QUARTER', y='MSACSR', data=grouped_data, color='skyblue', label='MSACSR')
+            sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
+            plt.xlabel('Quarter')
+            plt.ylabel('Normalized Values')
+            plt.title('Monthly Supply of New Houses vs CSUSHPISA (Normalized)')
+            plt.legend()
+            plt.grid(True)
+            plt.xticks(rotation=45, ha='right', fontsize=8)
+            st.pyplot(plt.gcf())
+            st.subheader("Monthly Supply of New Houses vs. Home Price Index (CSUSHPISA)")
+            st.write("The Monthly Supply of New Houses in the United States (MSACSR) represents the ratio of the current new for-sale inventory to the number of new houses being sold. It indicates how long the existing inventory would last at the current sales rate if no additional new houses were built. Importantly, MSACSR has a negative correlation with home prices, meaning that an increase in MSACSR may lead to a decrease in the S&P/Case-Shiller U.S. National Home Price Index. This relationship arises because an increase in the supply of new houses can potentially reduce demand, which in turn may result in lower home prices.")
+        
+        elif selected_chart == "Vacant Housing Units vs. Home Price":
+            merged_data['QUARTER'] = merged_data.index.to_period('Q')
+            merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
+            grouped_data = merged_data.groupby('QUARTER').agg({'EVACANTUSQ176N': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
+            scaler = MinMaxScaler()
+            grouped_data[['EVACANTUSQ176N', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['EVACANTUSQ176N', 'CSUSHPISA']])
+            grouped_data = grouped_data.sort_values('QUARTER')
+            plt.figure(figsize=(16, 6))
+            sns.barplot(x='QUARTER', y='EVACANTUSQ176N', data=grouped_data, color='skyblue', label='Median Sales Price')
+            sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
+            plt.xlabel('Quarter')
+            plt.ylabel('Normalized Values')
+            plt.title('Vacant Housing Units vs CSUSHPISA (Normalized)')
+            plt.legend()
+            plt.grid(True)
+            plt.xticks(rotation=45, ha='right', fontsize=8)
+            plt.tight_layout()
+            st.pyplot(plt.gcf())
+            st.subheader("Vacant Housing Units vs. Home Price Index (CSUSHPISA)")
+            st.write("""Imagine there are houses for sale, and some of them are empty and waiting for buyers. When there are not many empty houses (low inventory), home prices tend to go up because buyers compete and offer more money to buy a home. It's like a bidding war.
+    But when there are lots of empty houses (high inventory), it can push home prices down. That's because there are more houses than buyers, so sellers might lower prices to attract buyers. So, the number of empty houses can affect whether home prices go up or down.""")
+        
+        elif selected_chart == "New Housing Units Authorized vs. Home Price":
+            merged_data['QUARTER'] = merged_data.index.to_period('Q')
+            merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
+            grouped_data = merged_data.groupby('QUARTER').agg({'PERMIT': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
+            scaler = MinMaxScaler()
+            grouped_data[['PERMIT', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['PERMIT', 'CSUSHPISA']])
+            grouped_data = grouped_data.sort_values('QUARTER')
+            plt.figure(figsize=(16, 6))
+            sns.barplot(x='QUARTER', y='PERMIT', data=grouped_data, color='skyblue', label='Median Sales Price')
+            sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
+            plt.xlabel('Quarter')
+            plt.ylabel('Normalized Values')
+            plt.title('New Housing Units Authorized vs CSUSHPISA (Normalized)')
+            plt.legend()
+            plt.grid(True)
+            plt.xticks(rotation=45, ha='right', fontsize=8)
+            plt.tight_layout()
+            # Pass the Matplotlib figure to st.pyplot
+            st.pyplot(plt.gcf())
+            st.subheader("New Housing Units Authorized vs. Home Price Index (CSUSHPISA)")
+            st.write("New Privately-Owned Housing Units Authorized (PERMIT) counts how many new houses are allowed to be built. When more permits are given (high PERMIT), it's a good sign for home prices. It means there's demand, and prices can go up, like when everyone wants a limited-edition toy.")
 
-    # Make predictions on the testing set
-    predictions = model_instance.predict(X_test)
-    mse = mean_squared_error(y_test, predictions)
+        elif selected_chart == "Total Construction Spending vs. Home Price":
+            merged_data['QUARTER'] = merged_data.index.to_period('Q')
+            merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
+            grouped_data = merged_data.groupby('QUARTER').agg({'TLRESCONS': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
+            scaler = MinMaxScaler()
+            grouped_data[['TLRESCONS', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['TLRESCONS', 'CSUSHPISA']])
+            grouped_data = grouped_data.sort_values('QUARTER')
+            plt.figure(figsize=(16, 6))
+            sns.barplot(x='QUARTER', y='TLRESCONS', data=grouped_data, color='skyblue', label='Median Sales Price')
+            sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
+            plt.xlabel('Quarter')
+            plt.ylabel('Normalized Values')
+            plt.title('Construction Spending vs CSUSHPISA (Normalized)')
+            plt.legend()
+            plt.grid(True)
+            plt.xticks(rotation=45, ha='right', fontsize=8)
+            plt.tight_layout()
+            st.pyplot(plt.gcf())
+            st.subheader("Total Construction Spending vs. Home Price Index (CSUSHPISA)")
+            st.write("Total Construction Spending on Homes is like a measure of how much money is spent on building houses in the U.S. When this spending is high, it usually means good news for home prices. More home building often leads to higher demand, which can drive up prices, like a popular item getting more expensive")
 
-    # Display the results if a model is selected
-    st.subheader("Model Output")
-    if selected_model == 'Linear Regression':
-        st.markdown("<span style='color: red;'>**Best Model**</span>", unsafe_allow_html=True)
+        elif selected_chart == "30-Year Fixed Rate Mortgage vs. Home Price":
+            merged_data['QUARTER'] = merged_data.index.to_period('Q')
+            merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
+            grouped_data = merged_data.groupby('QUARTER').agg({'MORTGAGE30US': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
+            scaler = MinMaxScaler()
+            grouped_data[['MORTGAGE30US', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['MORTGAGE30US', 'CSUSHPISA']])
+            grouped_data = grouped_data.sort_values('QUARTER')
+            plt.figure(figsize=(16, 6))
+            sns.barplot(x='QUARTER', y='MORTGAGE30US', data=grouped_data, color='skyblue', label='Median Sales Price')
+            sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
+            plt.xlabel('Quarter')
+            plt.ylabel('Normalized Values')
+            plt.title('30-Year Fixed Rate Mortgag vs CSUSHPISA (Normalized)')
+            plt.legend()
+            plt.grid(True)
+            plt.xticks(rotation=45, ha='right', fontsize=8)
+            plt.tight_layout()
+            st.pyplot(plt.gcf())
+            st.subheader("30-Year Fixed Rate Mortgage vs. Home Price Index (CSUSHPISA)")
+            st.write("The 30-Year Fixed Rate Mortgage Average in the United States is like a gauge for mortgage interest rates. When rates are low, it's easier for folks to afford homes, boosting demand and raising home prices. Conversely, high rates make buying homes tough, reducing demand and lowering prices. Keep in mind that this chart lags behind, so it might not show an immediate connection between the variables.")
 
-    st.write("Model Selection Results:")
-    for model, mse_score in results.items():
-        st.write(f"{model}: MSE=<span style='color: red;'>{mse_score}</span>", unsafe_allow_html=True)
+        elif selected_chart == "GDP vs. Home Price":
+            merged_data['QUARTER'] = merged_data.index.to_period('Q')
+            merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
+            grouped_data = merged_data.groupby('QUARTER').agg({'GDP': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
+            scaler = MinMaxScaler()
+            grouped_data[['GDP', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['GDP', 'CSUSHPISA']])
+            grouped_data = grouped_data.sort_values('QUARTER')
+            plt.figure(figsize=(16, 6))
+            sns.barplot(x='QUARTER', y='GDP', data=grouped_data, color='skyblue', label='Median Sales Price')
+            sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
+            plt.xlabel('Quarter')
+            plt.ylabel('Normalized Values')
+            plt.title('GDP vs CSUSHPISA (Normalized)')
+            plt.legend()
+            plt.grid(True)
+            plt.xticks(rotation=45, ha='right', fontsize=8)
+            plt.tight_layout()
+            st.pyplot(plt.gcf())
+            st.subheader("GDP vs. Home Price Index (CSUSHPISA)")
+            st.write("The Gross Domestic Product (GDP) is like a measure of the overall economic health of a country. When GDP is strong, it often means a healthy economy, and that can boost home prices. The chart shows that when GDP goes up (more economic activity), home prices tend to follow suit. It's like when people have more money, they're more likely to buy homes, which can push prices up.")
+
+        elif selected_chart == "Consumer Sentiment vs. Home Price":
+            merged_data['QUARTER'] = merged_data.index.to_period('Q')
+            merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
+            grouped_data = merged_data.groupby('QUARTER').agg({'UMCSENT': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
+            scaler = MinMaxScaler()
+            grouped_data[['UMCSENT', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['UMCSENT', 'CSUSHPISA']])
+            grouped_data = grouped_data.sort_values('QUARTER')
+            plt.figure(figsize=(16, 6))
+            sns.barplot(x='QUARTER', y='UMCSENT', data=grouped_data, color='skyblue', label='Median Sales Price')
+            sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
+            plt.xlabel('Quarter')
+            plt.ylabel('Normalized Values')
+            plt.title('Consumer Sentiment vs CSUSHPISA (Normalized)')
+            plt.legend()
+            plt.grid(True)
+            plt.xticks(rotation=45, ha='right', fontsize=8)
+            plt.tight_layout()
+            st.pyplot(plt.gcf())
+            st.subheader("Consumer Sentiment vs. Home Price Index (CSUSHPISA)")
+            st.write("The University of Michigan Consumer Sentiment Index reflects how confident people feel about the economy. When confidence is high, folks tend to spend more, including on big purchases like homes. This increased demand for homes can drive up prices, as shown in the chart")
+
+        elif selected_chart == "Interest Rates vs. Home Price":
+            merged_data['QUARTER'] = merged_data.index.to_period('Q')
+            merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
+            grouped_data = merged_data.groupby('QUARTER').agg({'INTDSRUSM193N': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
+            scaler = MinMaxScaler()
+            grouped_data[['INTDSRUSM193N', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['INTDSRUSM193N', 'CSUSHPISA']])
+            grouped_data = grouped_data.sort_values('QUARTER')
+            plt.figure(figsize=(16, 6))
+            sns.barplot(x='QUARTER', y='INTDSRUSM193N', data=grouped_data, color='skyblue', label='Median Sales Price')
+            sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
+            plt.xlabel('Quarter')
+            plt.ylabel('Normalized Values')
+            plt.title('Interest Rates vs CSUSHPISA (Normalized)')
+            plt.legend()
+            plt.grid(True)
+            plt.xticks(rotation=45, ha='right', fontsize=8)
+            plt.tight_layout()
+            st.pyplot(plt.gcf())        
+            st.subheader("Interest Rates vs. Home Price Index (CSUSHPISA)")
+            st.write("The Interest Rates and Discount Rate are tools used by the Federal Reserve to control the supply of money in the economy. Lower interest rates make it easier for people to borrow money, increasing demand for homes and driving up prices, as seen in the chart.")
+
+        elif selected_chart == "Median Sales Price vs. Home Price":
+            merged_data['QUARTER'] = merged_data.index.to_period('Q')
+            merged_data['QUARTER'] = merged_data['QUARTER'].astype(str)
+            grouped_data = merged_data.groupby('QUARTER').agg({'MSPUS': 'sum', 'CSUSHPISA': 'mean'}).reset_index()
+            scaler = MinMaxScaler()
+            grouped_data[['MSPUS', 'CSUSHPISA']] = scaler.fit_transform(grouped_data[['MSPUS', 'CSUSHPISA']])
+            grouped_data = grouped_data.sort_values('QUARTER')
+            plt.figure(figsize=(16, 6))
+            sns.barplot(x='QUARTER', y='MSPUS', data=grouped_data, color='skyblue', label='Median Sales Price')
+            sns.lineplot(x='QUARTER', y='CSUSHPISA', data=grouped_data, marker='o', linestyle='-', color='red', label='CSUSHPISA')
+            plt.xlabel('Quarter')
+            plt.ylabel('Normalized Values')
+            plt.title('Median Sales Price vs CSUSHPISA (Normalized)')
+            plt.legend()
+            plt.grid(True)
+            plt.xticks(rotation=45, ha='right', fontsize=8)
+            plt.tight_layout()
+            st.pyplot(plt.gcf())
+            st.subheader("Median Sales Price vs. Home Price Index (CSUSHPISA)")
+            st.write("The Median Sales Price reflects the midpoint of house sale prices, indicating that half sold for more and half for less. A rise in median prices is closely linked to higher home prices.")
+   
+selected_chart()
 
 
-    # Display information about the selected model
-    st.subheader("Selected Model Information")
-    st.write(f"Selected Model: {selected_model}")
-    st.write(f"Selected Model MSE on Testing Set: <span style='color: red;'>{mse}</span>", unsafe_allow_html=True)
 
-    # Display model coefficients if the model is linear regression
-    if selected_model == 'Linear Regression':
-        coefficients = model_instance.coef_
-        st.subheader("R-squared score")
-        st.write(f"R-squared score: <span style='color: red;'>{r2}</span>", unsafe_allow_html=True)
-        st.subheader("Model Coefficients")
-        st.write("Coefficients:")
-        for feature, coefficient in zip(features, coefficients):
-            st.write(f"{feature}: <span style='color: red;'>{coefficient}</span>", unsafe_allow_html=True)
+
+def model():
+    models = {
+        'Select a Model': None,  # Initial placeholder with no model selected
+        'Linear Regression': LinearRegression(),
+        'Decision Tree': DecisionTreeRegressor(),
+        'Random Forest': RandomForestRegressor(),
+        'Support Vector Regression': SVR(),
+        'Neural Network': MLPRegressor()
+    }
+
+
+    # Create a Streamlit selectbox to choose the regression model
+    selected_model = st.selectbox("👇Regression Models", list(models.keys()))
+
+    # Initialize a dictionary to store model evaluation results
+    results = {}
+    # Check if a valid model is selected (not the placeholder)
+
+
+    if selected_model != 'Select a Model':
+        # Perform cross-validation and calculate mean squared error for the selected model
+        if models != "Select a Feature" and st.button("Generate Output"):
+            
+            model_instance = models[selected_model]
+            scores = cross_val_score(model_instance, X_train, y_train, cv=5, scoring='neg_mean_squared_error')
+            mse_scores = -scores
+            avg_mse = mse_scores.mean()
+            results[selected_model] = avg_mse
+
+        # Fit the selected model to the training data
+            model_instance.fit(X_train, y_train)
+
+        # Make predictions on the testing set
+            predictions = model_instance.predict(X_test)
+            mse = mean_squared_error(y_test, predictions)
+
+        # Display the results if a model is selected
+            st.subheader("Model Output")
+            if selected_model == 'Linear Regression':
+                st.markdown("<span style='color: red;'>**Best Model**</span>", unsafe_allow_html=True)
+
+            st.write("Model Selection Results:")
+            for model, mse_score in results.items():
+                st.write(f"{model}: MSE=<span style='color: red;'>{mse_score}</span>", unsafe_allow_html=True)
+
+
+        # Display information about the selected model
+            st.subheader("Selected Model Information")
+            st.write(f"Selected Model: {selected_model}")
+            st.write(f"Selected Model MSE on Testing Set: <span style='color: red;'>{mse}</span>", unsafe_allow_html=True)
+
+        # Display model coefficients if the model is linear regression
+            if selected_model == 'Linear Regression':
+                coefficients = model_instance.coef_
+                st.subheader("R-squared score")
+                st.write(f"R-squared score: <span style='color: red;'>{r2}</span>", unsafe_allow_html=True)
+                st.subheader("Model Coefficients")
+                st.write("Coefficients:")
+                for feature, coefficient in zip(features, coefficients):
+                    st.write(f"{feature}: <span style='color: red;'>{coefficient}</span>", unsafe_allow_html=True)
+model()
 
 st.sidebar.header("Details:")
 
@@ -426,7 +442,7 @@ he following data sources will be utilized for this analysis:
   - Building permits and construction data
   - Demographic data (population growth, age distribution, etc.)
                 
-#### Data Collection:
+#### Data Collection
 
 ##### Supply Data
 - **DATE**: The date of the observation (2003 - 2023).
@@ -534,4 +550,7 @@ More Homes, Higher Prices: When there are more new homes getting authorized for 
 
 These insights can help everyone in the real estate world, from buyers and sellers to builders and policymakers, make smarter decisions. Understanding these factors is like having a secret formula for the housing market.
 """)
-create_chart(selected_chart)
+
+# Disable the Streamlit onboarding sidebar
+st.set_option('deprecation.showfileUploaderEncoding', False)
+st.set_option('deprecation.showfileUploaderEncoding', False)
