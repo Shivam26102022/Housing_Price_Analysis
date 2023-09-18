@@ -430,7 +430,7 @@ if st.sidebar.button("Data Source"):
     st.markdown(""" 
 #### Data Source            
 
-he following data sources will be utilized for this analysis:
+The following data sources will be utilized for this analysis:
 
 - [S&P Case-Shiller Home Price Index (CSUSHPISA)](https://fred.stlouisfed.org/series/CSUSHPISA): This index will serve as a proxy for home prices in the United States.
 
