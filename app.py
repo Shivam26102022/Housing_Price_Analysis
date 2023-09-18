@@ -121,7 +121,9 @@ st.markdown("""
 st.markdown(
     """
     <style>
-    #MainMenu {visibility: hidden;}
+    MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    .github-corner {display: none;}
     footer {visibility: hidden;}
     </style>
     """,
