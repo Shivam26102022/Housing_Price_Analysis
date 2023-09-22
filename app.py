@@ -18,7 +18,6 @@ from sklearn.metrics import r2_score
 supply_data = pd.read_csv(r"supply.csv")
 demand_data = pd.read_csv(r"demand.csv")
 
-
 # Convert 'DATE' columns to datetime to ensure proper date handling
 supply_data['DATE'] = pd.to_datetime(supply_data['DATE'])
 demand_data['DATE'] = pd.to_datetime(demand_data['DATE'])
